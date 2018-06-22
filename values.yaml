@@ -1,0 +1,67 @@
+# Default values for continuouspipe-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+github:
+  client_id:
+  client_secret:
+  integration_id:
+  integration_slug:
+  secret:
+  integration_private_key_path: ~
+
+firebase:
+  app:
+  api_key:
+  service_account_path: ~
+
+builder_default_engine: gcb
+river_api_url:
+admin_password: djeu7e9zNehjzNie9
+master_api_key: 1234567890qwerty
+app_secret: ThisIsASuperApiSecretToChange
+google_analytics_tracker:
+billing: false
+
+jwt:
+  private_key_path: ~
+  public_key_path: ~
+  private_key_passphrase:
+
+ssl:
+  private_key_path: ~
+  certificate_path: ~
+
+managed_cluster:
+  enabled: true
+  dsn: kinception://this
+
+managed_registry:
+  enabled: false
+  dsn:
+
+intercom:
+  enabled: false
+  application_id:
+
+statis_meter:
+  enabled: false
+  write_key:
+
+sentry:
+  enabled: false
+  api_dsn:
+  ui_dsn:
+
+google_cloud_audit:
+  enabled: false
+  project_id:
+  service_account_path: ~
+
+gcb:
+  enabled: true
+  source_bucket:
+  project_id:
+  image:
+  version:
+  service_account_path: ~

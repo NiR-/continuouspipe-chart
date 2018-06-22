@@ -1,0 +1,58 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: kube-proxy
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "kube-proxy") }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        release: {{ .Release.Name }}
+        component: kube-proxy
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: kube-proxy
+          image: docker.io/continuouspipe/kube-proxy:latest
+          imagePullPolicy: Always
+          env:
+            - name: KUBE_PROXY_LISTEN_ADDRESS
+              value: http://0.0.0.0:80
+          envFrom:
+            - configMapRef:
+                name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "main-config") }}
+          volumeMounts:
+            - name: runtime-keys
+              mountPath: "/runtime/keys"
+              readOnly: true
+      volumes:
+        - name: runtime-keys
+          secret:
+            secretName: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "secret-runtime-keys") }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: kube-proxy
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "kube-proxy") }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: kube-proxy
+      port: 80
+  selector:
+    app: {{ template "continuouspipe.name" . }}
+    release: {{ .Release.Name }}
+    component: kube-proxy

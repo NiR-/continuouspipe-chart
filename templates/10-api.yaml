@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: api
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "api") }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        release: {{ .Release.Name }}
+        component: api
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: api
+          image: docker.io/continuouspipe/api:latest
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_HOST
+              value: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database") }}
+            - name: DATABASE_NAME
+              value: continuouspipe
+            - name: DATABASE_PASSWORD
+              value: continuouspipe
+            - name: DATABASE_USER
+              value: continuouspipe
+            - name: K8S_WATCHER_URL
+              value: http://{{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "k8s-watcher") }}
+            - name: LOGSTREAM_URL
+              value: https://{{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "logstream") }}
+            - name: REDIS_HOST
+              value: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "redis") }}
+            - name: KUBE_PROXY_URL
+              value: http://{{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "kube-proxy") }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "main-config") }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 30
+            periodSeconds: 30
+            timeoutSeconds: 30
+          volumeMounts:
+            - name: runtime-keys
+              mountPath: "/runtime/keys"
+              readOnly: true
+      volumes:
+        - name: runtime-keys
+          secret:
+            secretName: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "secret-runtime-keys") }}

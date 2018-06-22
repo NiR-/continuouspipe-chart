@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: api
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "api") }}
+spec:
+  type: LoadBalancer
+  ports:
+    - name: api
+      port: 80
+  selector:
+    app: {{ template "continuouspipe.name" . }}
+    release: {{ .Release.Name }}
+    component: api

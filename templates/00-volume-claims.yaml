@@ -1,0 +1,37 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: database
+  annotations:
+    "helm.sh/hook": "pre-install"
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database-claim") }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: rabbitmq
+  annotations:
+    "helm.sh/hook": "pre-install"
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "rabbitmq-claim") }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

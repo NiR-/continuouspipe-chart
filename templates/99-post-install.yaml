@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "load-database-migrations") }}
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: api
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  template:
+    metadata:
+      name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "load-database-migrations") }}
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        chart: {{ template "continuouspipe.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+        component: database
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: load-database-migrations
+          image: docker.io/akerouanton/cp-migration-loader:latest
+          env:
+            - name: DATABASE_HOST
+              value: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database") }}
+            - name: DATABASE_NAME
+              value: continuouspipe
+            - name: DATABASE_PASSWORD
+              value: continuouspipe
+            - name: DATABASE_USER
+              value: continuouspipe
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "load-assets") }}
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: database
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  template:
+    metadata:
+      name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "load-assets") }}
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        chart: {{ template "continuouspipe.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+        component: api
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: dump-assets
+          image: docker.io/continuouspipe/api:latest
+          command:
+            - sh
+            - -c
+            - |
+              bin/console --env=prod assets:install && \
+              bin/console --env=prod assetic:dump

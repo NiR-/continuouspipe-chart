@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: logstream
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "logstream") }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        release: {{ .Release.Name }}
+        component: logstream
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: logstream
+          image: docker.io/continuouspipe/logstream:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "main-config") }}
+          volumeMounts:
+            - name: runtime-keys
+              mountPath: "/runtime/keys"
+              readOnly: true
+      volumes:
+        - name: runtime-keys
+          secret:
+            secretName: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "secret-runtime-keys") }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: logstream
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "logstream") }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: logstream
+      port: 443
+  selector:
+    app: {{ template "continuouspipe.name" . }}
+    release: {{ .Release.Name }}
+    component: logstream

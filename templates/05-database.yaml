@@ -1,0 +1,58 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: database
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database") }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        release: {{ .Release.Name }}
+        component: database
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database") }}
+          image: mariadb
+          env:
+            - name: MYSQL_DATABASE
+              value: continuouspipe
+            - name: MYSQL_PASSWORD
+              value: continuouspipe
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+            - name: MYSQL_USER
+              value: continuouspipe
+          volumeMounts:
+            - mountPath: "/var/lib/mysql"
+              name: database-data-volume
+      volumes:
+        - name: database-data-volume
+          persistentVolumeClaim:
+            claimName: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database-claim") }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: database
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "database") }}
+spec:
+  ports:
+    - name: database
+      port: 3306
+  selector:
+    app: {{ template "continuouspipe.name" . }}
+    release: {{ .Release.Name }}
+    component: database

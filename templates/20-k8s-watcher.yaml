@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: k8s-watcher
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "k8s-watcher") }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "continuouspipe.name" . }}
+        release: {{ .Release.Name }}
+        component: k8s-watcher
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: k8s-watcher
+          image: docker.io/continuouspipe/k8s-watcher:latest
+          imagePullPolicy: Always
+          env:
+            - name: KUBE_PROXY_HOSTNAME
+              value: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "kube-proxy") }}
+            - name: REDIS_HOST
+              value: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "redis") }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "main-config") }}
+          volumeMounts:
+            - name: runtime-keys
+              mountPath: "/runtime/keys"
+              readOnly: true
+      volumes:
+        - name: runtime-keys
+          secret:
+            secretName: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "secret-runtime-keys") }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: k8s-watcher
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "k8s-watcher") }}
+spec:
+  ports:
+    - name: k8s-watcher
+      port: 80
+  selector:
+    app: {{ template "continuouspipe.name" . }}
+    release: {{ .Release.Name }}
+    component: k8s-watcher

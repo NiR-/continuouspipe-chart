@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ template "continuouspipe.name" . }}
+    chart: {{ template "continuouspipe.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "continuouspipe.component_name" (dict "Release" .Release "Component" "main-config") }}
+data:
+  GITHUB_CLIENT_ID: "{{ .Values.github.client_id }}"
+  GITHUB_CLIENT_SECRET: "{{ .Values.github.client_secret }}"
+  GITHUB_INTEGRATION_ID: "{{ .Values.github.integration_id }}"
+  GITHUB_INTEGRATION_SLUG: "{{ .Values.github.integration_slug }}"
+  GITHUB_SECRET: "{{ .Values.github.secret }}"
+  GITHUB_INTEGRATION_PRIVATE_KEY_PATH: "/runtime/{{ default "keys/github.pem" .Values.github.integration_private_key_path }}"
+  FIREBASE_APP: "{{ .Values.firebase.app }}"
+  FIREBASE_WEB_API_KEY: "{{ .Values.firebase.api_key }}"
+  FIREBASE_SERVICE_ACCOUNT_PATH: "/runtime/{{ default "keys/firebase.json" .Values.firebase.service_account_path }}"
+  BUILDER_DEFAULT_ENGINE: "{{ .Values.builder_default_engine }}"
+  GOOGLE_CONTAINER_BUILDER_ENABLED: "{{ .Values.gcb.enabled }}"
+  RIVER_API_URL: "{{ .Values.river_api_url }}"
+  ADMIN_PASSWORD: "{{ .Values.admin_password }}"
+  MASTER_API_KEY: "{{ .Values.master_api_key }}"
+  APP_SECRET: "{{ .Values.app_secret }}"
+  JWT_PRIVATE_KEY_PATH: "/runtime/{{ default "keys/jwt-private.key" .Values.jwt.private_key_path }}"
+  JWT_PUBLIC_KEY_PATH: "/runtime/{{ default "keys/jwt-public.key" .Values.jwt.public_key_path }}"
+  JWT_PRIVATE_KEY_PASS_PHRASE: "{{ .Values.jwt.private_key_passphrase }}"
+  SSL_CERTIFICATE_PRIVATE_KEY_PATH: "/runtime/{{ default "keys/server.key" .Values.ssl.private_key_path }}"
+  SSL_CERTIFICATE_CERTIFICATE_PATH: "/runtime/{{ default "keys/server.crt" .Values.ssl.certificate_path }}"
+  SSL_CERTIFICATE_DOMAIN_NAME: "{{ .Values.ssl.domain_name }}"
+  MANAGED_CLUSTER_ENABLED: "{{ .Values.managed_cluster.enabled }}"
+  MANAGED_CLUSTER_DSN: "{{ .Values.managed_cluster.dsn }}"
+  MANAGED_REGISTRY_ENABLED: "{{ .Values.managed_registry.enabled }}"
+  MANAGED_REGISTRY_DSN: "{{ .Values.managed_registry.dsn }}"
+  INTERCOM_ENABLED: "{{ .Values.intercom.enabled }}"
+  INTERCOM_APPLICATION_ID: "{{ .Values.intercom.application_id }}"
+  STATIS_METER_ENABLED: "{{ .Values.statis_meter.enabled }}"
+  STATIS_METER_WRITE_KEY: "{{ .Values.statis_meter.write_key }}"
+  GOOGLE_ANALYTICS_TRACKER: "{{ .Values.google_analytics_tracker }}"
+  SENTRY_ENABLED: "{{ .Values.sentry.enabled }}"
+  API_SENTRY_DSN: "{{ .Values.sentry.api_dsn }}"
+  UI_SENTRY_DSN: "{{ .Values.sentry.ui_dsn }}"
+  GOOGLE_CLOUD_AUDIT_ENABLED: "{{ .Values.google_cloud_audit.enabled }}"
+  GOOGLE_CLOUD_AUDIT_LOG_PROJECT_ID: "{{ .Values.google_cloud_audit.project_id }}"
+  GOOGLE_CLOUD_AUDIT_LOG_SERVICE_ACCOUNT_PATH: "/runtime/{{ default "keys/google-cloud-audit.json" .Values.google_cloud_audit.service_account_path }}"
+  BILLING_ENABLED: "{{ .Values.billing }}"
+  GOOGLE_CONTAINER_BUILDER_SOURCE_BUCKET: "{{ .Values.gcb.source_bucket }}"
+  GOOGLE_CONTAINER_BUILDER_PROJECT_ID: "{{ .Values.gcb.project_id }}"
+  GOOGLE_CONTAINER_BUILDER_IMAGE: "{{ .Values.gcb.image }}"
+  GOOGLE_CONTAINER_BUILDER_VERSION: "{{ .Values.gcb.version }}"
+  GOOGLE_CONTAINER_BUILDER_SERVICE_ACCOUNT_PATH: "/runtime/{{ default "keys/google-container-builder.json" .Values.gcb.service_account_path }}"
